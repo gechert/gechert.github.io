@@ -222,6 +222,7 @@
         .heart-beat { display: inline-block; color: var(--down-color); animation: heartbeat 1.5s infinite; }
         @keyframes heartbeat { 0% { transform: scale(1); } 15% { transform: scale(1.25); } 30% { transform: scale(1); } 45% { transform: scale(1.25); } 60% { transform: scale(1); } 100% { transform: scale(1); } }
 
+        /* منطقة التمرير لضمان قراءة الرسالة من الأعلى */
         .welcome-content-scroll {
             flex-grow: 1; overflow-y: auto; padding-left: 10px; margin-bottom: 15px; max-height: 55vh;
         }
@@ -302,11 +303,12 @@
     </div>
 </div>
 
-<!-- نافذة الترحيب والشرح -->
+<!-- نافذة الترحيب والشرح (تظهر دائماً) -->
 <div id="welcomeOverlay" class="welcome-overlay">
     <div class="welcome-box">
         <h2 class="welcome-title">صُنع بكل حُب <i class="fa-solid fa-heart heart-beat"></i></h2>
         
+        <!-- التمرير الداخلي للرسالة -->
         <div class="welcome-content-scroll">
             <div class="welcome-text">
                 طبعا ادري فيك مستغربه بس فكرة الموقع سويتها عشان نتبع فيها علاقتنا وبحكم اني احب التداول سويتها ك شارت او سهم يهبط ويترفع بتدخلنا احنا.<br><br>
@@ -667,6 +669,7 @@
         document.getElementById('startWelcomeBtn').classList.remove('active');
         
         welcomeOverlay.style.display = 'flex';
+        // رفع النص الترحيبي لأعلى سطر ليظهر من البداية
         setTimeout(() => {
             const scrollArea = document.querySelector('.welcome-content-scroll');
             if(scrollArea) scrollArea.scrollTop = 0;
@@ -683,7 +686,8 @@
         setTimeout(() => {
             welcomeOverlay.classList.remove('active');
             welcomeOverlay.style.display = 'none';
-            evaluateApp(); 
+            // نقوم بالتأكد من تهيئة الشارت عند إغلاق النافذة
+            checkAppReady(); 
         }, 500);
     }
 
@@ -696,8 +700,10 @@
         }, 50);
     }
 
-    function evaluateApp() {
+    // تقييم وعمل الشارت (حماية من التصفير والتجمد)
+    function checkAppReady() {
         if (!auth.currentUser || !dataLoaded || !settingsLoaded) return;
+        
         if (!isWelcomeRead) return; 
         
         if (isChartLocked) {
@@ -707,8 +713,10 @@
             return; 
         }
 
+        // إضاءة الزر الأخضر كدليل على أن التطبيق نشط
         document.getElementById('liveDot').style.display = 'inline-block';
         
+        // التحقق من الشموع (إذا كان الشارت فارغ حقاً)
         if (candles.length === 0) {
             initDefaultData();
         } else if (isInitialLoad) {
@@ -716,12 +724,12 @@
             isInitialLoad = false;
         }
 
+        // استمرار النبض
         if (!liveTickInterval) {
             liveTickInterval = setInterval(liveStableTick, 2000);
         }
 
-        scrollOffset = 0;
-        targetScrollOffset = null;
+        // التأكد من أن قماش الشارت مرسوم (منع ظهور الشاشة السوداء)
         resizeCanvas();
 
         updateUI();
@@ -761,6 +769,7 @@
                 document.getElementById('setupOverlay').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('setupOverlay').style.display = 'none';
+                    // المتغيرات تتحدث من dbListener
                 }, 500);
             }, 800);
         });
@@ -769,8 +778,7 @@
     auth.onAuthStateChanged(user => {
         if (user) {
             let hasSuccessBtn = document.querySelector('.btn-success');
-            let isAutoLogin = !hasSuccessBtn; 
-            let delay = isAutoLogin ? 0 : 800; 
+            let delay = hasSuccessBtn ? 800 : 0; 
             
             setTimeout(() => {
                 authScreen.style.opacity = '0';
@@ -785,17 +793,16 @@
                     settingsLoaded = false;
                     isInitialLoad = true;
                     isChartLocked = true;
+                    isWelcomeRead = false;
+                    
+                    // منع إرجاع التمرير لنقطة البداية بشكل قسري، سيتم حسابه لاحقاً
                     scrollOffset = 0;
                     targetScrollOffset = null;
                     
                     loadData(); 
-
-                    if (isAutoLogin) {
-                        isWelcomeRead = true;
-                        document.getElementById('welcomeOverlay').style.display = 'none';
-                    } else {
-                        showWelcomeModal();
-                    }
+                    
+                    // إجبار ظهور الرسالة
+                    showWelcomeModal();
 
                 }, 400); 
             }, delay);
@@ -917,12 +924,12 @@
             for (let i = 0; i < ticksToGenerate; i++) {
                 currentTimePointer += timeStep;
                 let open = startPrice;
-                // تذبذب السنتات من 20 لـ 40 سنت للواقعية
-                let change = (Math.random() - 0.5) * 0.40; 
+                // تذبذب السنتات الطبيعي والمريح للعين
+                let change = (Math.random() - 0.5) * 0.15; 
                 let close = open + change;
                 
-                let high = Math.max(open, close) + (Math.random() * 0.15);
-                let low = Math.min(open, close) - (Math.random() * 0.15);
+                let high = Math.max(open, close) + (Math.random() * 0.05);
+                let low = Math.min(open, close) - (Math.random() * 0.05);
                 let volume = Math.random() * 50 + 10;
                 candles.push({ time: currentTimePointer, open: open, close: close, high: high, low: low, volume: volume, note: null, isRead: true, isManual: false });
                 startPrice = close;
@@ -946,7 +953,7 @@
                 document.getElementById('liveDot').style.display = 'none';
                 if(liveTickInterval) { clearInterval(liveTickInterval); liveTickInterval = null; }
             }
-            evaluateApp();
+            checkAppReady();
         });
 
         if(dbListener) dbRef.off('value', dbListener);
@@ -958,7 +965,7 @@
             } else {
                 candles = [];
             }
-            evaluateApp();
+            checkAppReady();
         });
     }
 
@@ -967,9 +974,13 @@
     });
 
     function resizeCanvas() {
-        if(!auth.currentUser) return;
+        if(!wrapper) return;
         let dpr = window.devicePixelRatio || 1;
         let rect = wrapper.getBoundingClientRect();
+        
+        // منع الفشل إذا كان العنصر غير ظاهر بعد
+        if (rect.width === 0 || rect.height === 0) return;
+        
         width = rect.width;
         height = rect.height;
         canvas.width = width * dpr;
@@ -977,6 +988,7 @@
         canvas.style.width = width + 'px';
         canvas.style.height = height + 'px';
         ctx.scale(dpr, dpr);
+        
         if(isWelcomeRead && !isChartLocked) drawChart();
     }
     window.addEventListener('resize', resizeCanvas);
@@ -1004,6 +1016,7 @@
         if(isPinching || isChartLocked || !isWelcomeRead) return;
         if (isDragging) {
             let deltaX = x - lastX;
+            // استخدام قسمة لتسهيل السحب والتحكم 1:1 كالتالي بمنصة بينانس
             let candleSpace = (width - 55) / zoomLevel; 
             scrollOffset += deltaX / candleSpace;
             lastX = x;
@@ -1089,7 +1102,18 @@
     }
 
     function drawChart() {
-        if(!width || !height || !isWelcomeRead) return;
+        if(!isWelcomeRead || isChartLocked) return;
+
+        // حماية أخيرة للتأكد من وجود عرض وارتفاع للقماش
+        if (!width || !height) {
+            let rect = wrapper.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                resizeCanvas();
+            } else {
+                return;
+            }
+        }
+
         ctx.clearRect(0, 0, width, height);
 
         let rightAxisWidth = 55; 
@@ -1097,7 +1121,7 @@
         let chartWidth = width - rightAxisWidth;
         let chartHeight = height - volHeight;
 
-        if(isChartLocked || candles.length === 0) {
+        if(candles.length === 0) {
             ctx.strokeStyle = '#1F242A'; ctx.lineWidth = 1; ctx.fillStyle = 'var(--text-muted)'; ctx.font = '10px Arial'; ctx.textAlign = 'left';
             for(let i = 1; i <= 5; i++) {
                 let y = (chartHeight / 6) * i;
@@ -1107,6 +1131,7 @@
             return;
         }
 
+        // السحب الناعم وحرية التمرير لليسار (المستقبل) قليلاً
         if (targetScrollOffset !== null) {
             let diff = targetScrollOffset - scrollOffset;
             if (Math.abs(diff) < 0.1) { scrollOffset = targetScrollOffset; targetScrollOffset = null; } else { scrollOffset += diff * 0.1; }
@@ -1114,7 +1139,8 @@
         
         let maxScroll = Math.max(0, candles.length - 2);
         if (scrollOffset > maxScroll) scrollOffset = maxScroll;
-        if (scrollOffset < -zoomLevel * 0.5) scrollOffset = -zoomLevel * 0.5;
+        // السماح بالتمرير لليسار (الفراغ) كما في منصات التداول
+        if (scrollOffset < -zoomLevel * 0.4) scrollOffset = -zoomLevel * 0.4;
 
         let startIndex = Math.max(0, candles.length - 1 - Math.ceil(scrollOffset + zoomLevel));
         let endIndex = Math.min(candles.length - 1, candles.length - 1 - Math.floor(scrollOffset));
@@ -1125,6 +1151,7 @@
         let minPrice = Math.min(...visibleCandles.map(c => c.low));
         let maxVol = Math.max(...visibleCandles.map(c => c.volume));
         
+        // Auto-Scale بدون قيود تدميرية
         let priceRange = maxPrice - minPrice;
         if (priceRange === 0) {
             maxPrice += 1;
@@ -1156,6 +1183,7 @@
         let hoveredCandleX = null;
         let timeNow = Date.now();
 
+        // رسم خطوط MA (المتوسط المتحرك)
         let ma5Path = [];
         let ma10Path = [];
 
@@ -1180,13 +1208,15 @@
             let color = isUp ? '#0ECB81' : '#F6465D';
             
             // السُمك موحد للجميع لضمان التناسق (مثل بايننس)
-            let cWidth = Math.max(candleSpace * 0.8, 1.5);
+            let isManual = c.isManual;
+            let cWidth = Math.max(candleSpace * 0.7, 1.5);
 
             if(isHovering && Math.abs(crosshairX - x) < candleSpace / 2) {
                 hoveredCandleData = c;
                 hoveredCandleX = x;
             }
 
+            // الفتيل
             ctx.beginPath(); 
             ctx.moveTo(x, getY(c.high)); 
             ctx.lineTo(x, getY(c.low));
@@ -1194,10 +1224,13 @@
             ctx.lineWidth = 1; 
             ctx.stroke();
             
+            // الجسم
             let yOpen = getY(c.open);
             let yClose = getY(c.close);
             let bodyY = Math.min(yOpen, yClose);
-            let bodyH = Math.max(Math.abs(yOpen - yClose), 2.5); 
+            
+            // فرض ارتفاع لا يقل عن 2 بكسل للشمعة حتى تبدو طبيعية تماما ولا تتسطح بالزوم
+            let bodyH = Math.max(Math.abs(yOpen - yClose), 2); 
             
             ctx.fillStyle = color; 
             ctx.fillRect(x - cWidth/2, bodyY, cWidth, bodyH);
@@ -1339,20 +1372,24 @@
         let lastData = candles[candles.length - 1];
         let open = lastData.close;
         
-        // التذبذب اليومي وقت الخمول (20-40 سنت)
-        let change = (Math.random() - 0.5) * 0.40; 
+        // التذبذب اليومي وقت الخمول بالسنتات
+        let change = (Math.random() - 0.5) * 0.12; 
         let close = open + change; 
         
-        let high = Math.max(open, close) + (Math.random() * 0.15);
-        let low = Math.min(open, close) - (Math.random() * 0.15);
+        let high = Math.max(open, close) + (Math.random() * 0.05);
+        let low = Math.min(open, close) - (Math.random() * 0.05);
         let volume = Math.random() * 50 + 10;
 
         candles.push({time: Date.now(), open, close, high, low, volume, note: null, isRead: true, isManual: false});
         if(candles.length > 5000) candles.shift(); 
         saveData();
 
-        if (scrollOffset > 0 && !isDragging && targetScrollOffset === null) scrollOffset += 1;
-        else if (!isDragging) updateUI();
+        // التوقف عن سحب المستخدم للشموع الجديدة إذا كان يعود للماضي
+        if (scrollOffset > 0 && !isDragging && targetScrollOffset === null) {
+            scrollOffset += 1;
+        } else if (!isDragging) {
+            updateUI();
+        }
     }
 
     function openWriteModal(type) {
@@ -1386,7 +1423,7 @@
         
         let lastData = candles[candles.length - 1];
         let open = lastData.close;
-        // قفزة التدخل (دولارات من 1.5 إلى 3 دولار)
+        // قفزة التدخل بمقدار يتراوح بين 1.5 الى 3 دولار
         let jump = Math.random() * 1.5 + 1.5; 
         let close = pendingInteractionType === 'buy' ? open + jump : open - jump;
         let high = Math.max(open, close) + Math.random() * 0.5;
