@@ -34,9 +34,12 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'MyCustomFont', Arial, sans-serif !important; 
             -webkit-tap-highlight-color: transparent;
             user-select: none;
+        }
+
+        body, button, input, textarea {
+            font-family: 'MyCustomFont', Arial, sans-serif;
         }
 
         body {
@@ -116,11 +119,58 @@
         @keyframes shakeButton { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 50% { transform: translateX(6px); } 75% { transform: translateX(-6px); } }
 
         /* =========================================
+           نظام الإشعارات
+           ========================================= */
+        .bell-wrapper { position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 5px; font-size: 20px; color: var(--text-main); }
+        .bell-badge { 
+            position: absolute; top: -2px; right: -2px; background: var(--down-color); 
+            color: white; font-size: 10px; font-weight: bold; 
+            min-width: 16px; height: 16px; border-radius: 8px; 
+            display: none; justify-content: center; align-items: center; 
+            box-shadow: 0 0 8px var(--down-color); animation: pulseLive 1.5s infinite; 
+            padding: 0 4px;
+        }
+        
+        .notif-panel {
+            position: absolute; top: 50px; right: 15px; width: 280px; background: rgba(22, 26, 30, 0.95);
+            border: 1px solid var(--border-color); border-radius: 12px; backdrop-filter: blur(10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.8); z-index: 2000; display: none; opacity: 0; transform: translateY(-15px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); flex-direction: column; overflow: hidden;
+        }
+        .notif-panel.active { display: flex; opacity: 1; transform: translateY(0); }
+        .notif-header { padding: 15px; border-bottom: 1px solid var(--border-color); font-weight: bold; font-size: 14px; display: flex; justify-content: space-between; align-items: center; color: var(--primary-glow); background: rgba(0,0,0,0.2); }
+        .notif-list { max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; }
+        .notif-list::-webkit-scrollbar { width: 4px; }
+        .notif-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        
+        .notif-item { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; display: flex; gap: 12px; transition: background 0.2s; align-items: center; }
+        .notif-item:hover { background: rgba(255,255,255,0.05); }
+        .notif-icon { font-size: 16px; display: flex; align-items: center; justify-content: center; width: 35px; height: 35px; border-radius: 50%; flex-shrink: 0; }
+        .notif-icon.up { background: rgba(14, 203, 129, 0.15); color: var(--up-color); }
+        .notif-icon.down { background: rgba(246, 70, 93, 0.15); color: var(--down-color); }
+        .notif-content { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .notif-title { font-size: 12.5px; font-weight: bold; color: var(--text-main); }
+        .notif-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+        .notif-time { font-size: 9px; color: #666; margin-top: 2px; direction: ltr; text-align: right; }
+
+        /* التنبيهات الفورية (Toasts) */
+        .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 90%; max-width: 350px;}
+        .toast {
+            background: rgba(30, 35, 41, 0.98); border-right: 4px solid var(--primary-glow);
+            padding: 15px; border-radius: 12px; color: white; display: flex; align-items: center; gap: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6); pointer-events: auto; cursor: pointer;
+            animation: toastIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), toastOut 0.5s 5s forwards;
+        }
+        .toast-icon { font-size: 22px; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(-40px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes toastOut { to { opacity: 0; transform: translateY(-40px) scale(0.9); } }
+
+        /* =========================================
            القسم العلوي للمنصة
            ========================================= */
-        .header-section { flex: 0 0 auto; display: flex; flex-direction: column; }
+        .header-section { flex: 0 0 auto; display: flex; flex-direction: column; position: relative; z-index: 10;}
         .top-nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; font-size: 16px; }
-        .top-nav-left { display: flex; gap: 15px; color: var(--text-main); font-size: 16px; align-items: center;}
+        .top-nav-left { display: flex; gap: 18px; color: var(--text-main); font-size: 18px; align-items: center;}
         .top-nav-center { font-size: 18px; font-weight: bold; display: flex; align-items: center; gap: 6px; direction: ltr; transition: all 0.3s ease;}
         .top-nav-right { color: var(--down-color); font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 6px; cursor: pointer; background: rgba(246, 70, 93, 0.1); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(246, 70, 93, 0.2); transition: all 0.2s;}
         .top-nav-right:active { transform: scale(0.95); }
@@ -199,7 +249,7 @@
         .bottom-icons i { font-size: 16px; color: var(--text-main);}
 
         /* =========================================
-           النوافذ الترحيبية وإعداد الأسماء
+           النوافذ الترحيبية
            ========================================= */
         .welcome-overlay {
             position: fixed; inset: 0; width: 100%; height: 100%;
@@ -222,7 +272,6 @@
         .heart-beat { display: inline-block; color: var(--down-color); animation: heartbeat 1.5s infinite; }
         @keyframes heartbeat { 0% { transform: scale(1); } 15% { transform: scale(1.25); } 30% { transform: scale(1); } 45% { transform: scale(1.25); } 60% { transform: scale(1); } 100% { transform: scale(1); } }
 
-        /* منطقة التمرير لضمان قراءة الرسالة من الأعلى */
         .welcome-content-scroll {
             flex-grow: 1; overflow-y: auto; padding-left: 10px; margin-bottom: 15px; max-height: 55vh;
         }
@@ -254,10 +303,15 @@
 
         @keyframes bounceBtn { 0% { transform: scale(0.9); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* شاشة إدخال الأسماء (القفل) */
+        /* شاشات تحديد الهوية (جديد) وإدخال الأسماء (القفل) */
         .setup-inputs { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; justify-content: center; }
         .setup-inputs input { flex: 1; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); text-align: center; outline: none; transition: 0.3s; font-size: 14px; font-weight: bold;}
         .setup-inputs input:focus { border-color: var(--primary-glow); }
+        
+        .identity-btn { width: 100%; padding: 15px; border: 1px solid var(--primary-glow); border-radius: 10px; font-size: 16px; font-weight: bold; background: transparent; color: var(--primary-glow); cursor: pointer; margin-bottom: 12px; transition: all 0.3s ease; }
+        .identity-btn:hover { background: rgba(252, 213, 53, 0.1); }
+        .identity-btn:active { transform: scale(0.96); }
+
         @keyframes pulseLock { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; color: var(--primary-glow); text-shadow: 0 0 15px rgba(252,213,53,0.5); } 100% { transform: scale(1); opacity: 0.8; } }
         .unlock-anim { animation: unlockFlip 0.6s ease forwards; color: var(--up-color) !important; text-shadow: 0 0 20px rgba(14,203,129,0.5); }
         @keyframes unlockFlip { 0% { transform: scale(1) rotateY(0deg); } 50% { transform: scale(1.3) rotateY(90deg); } 100% { transform: scale(1.2) rotateY(0deg); } }
@@ -283,6 +337,8 @@
 </head>
 <body>
 
+<div id="toastContainer" class="toast-container"></div>
+
 <!-- شاشة تسجيل الدخول -->
 <div id="authScreen" class="auth-overlay">
     <div class="auth-box">
@@ -303,12 +359,27 @@
     </div>
 </div>
 
-<!-- نافذة الترحيب والشرح (تظهر دائماً) -->
+<!-- شاشة تحديد الهوية (لكل حساب مستقل) -->
+<div id="identityOverlay" class="welcome-overlay">
+    <div class="welcome-box" style="text-align: center; max-width: 350px;">
+        <div style="font-size: 45px; color: var(--primary-glow); margin-bottom: 15px;">
+            <i class="fa-solid fa-users"></i>
+        </div>
+        <h2 style="color: var(--text-main); font-size: 20px; margin-bottom: 10px;">من يستخدم الجهاز الآن؟</h2>
+        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 25px;">
+            يرجى تحديد هويتك ليتم تخصيص الإشعارات والتنبيهات لحسابك بشكل صحيح.
+        </p>
+        <div id="identityButtonsContainer">
+            <!-- الأزرار تضاف هنا برمجياً -->
+        </div>
+    </div>
+</div>
+
+<!-- نافذة الترحيب والشرح -->
 <div id="welcomeOverlay" class="welcome-overlay">
     <div class="welcome-box">
         <h2 class="welcome-title">صُنع بكل حُب <i class="fa-solid fa-heart heart-beat"></i></h2>
         
-        <!-- التمرير الداخلي للرسالة -->
         <div class="welcome-content-scroll">
             <div class="welcome-text">
                 طبعا ادري فيك مستغربه بس فكرة الموقع سويتها عشان نتبع فيها علاقتنا وبحكم اني احب التداول سويتها ك شارت او سهم يهبط ويترفع بتدخلنا احنا.<br><br>
@@ -331,8 +402,8 @@
                     <span><b>الماسة:</b> تظهر في المخطط عند إضافة ملاحظة، اضغط عليها لقراءة الرسائل المخبأة.</span>
                 </div>
                 <div class="feature-item">
-                    <i class="fa-regular fa-calendar-days" style="color: var(--primary-glow);"></i>
-                    <span><b>فلتر التاريخ:</b> للعودة بالزمن والانتقال السريع للتواريخ والذكريات السابقة.</span>
+                    <i class="fa-solid fa-bell" style="color: var(--primary-glow);"></i>
+                    <span><b>الإشعارات:</b> يأتيك تنبيه فوري متى ما قام الطرف الآخر بإضافة تدخل أو ملاحظة.</span>
                 </div>
                 <div class="feature-item">
                     <i class="fa-solid fa-trash-can" style="color: var(--down-color);"></i>
@@ -371,18 +442,33 @@
             <i class="fa-solid fa-heart heart-beat" style="font-size: 20px;"></i>
             <input type="text" id="partner2Name" placeholder="الاسم الثاني" oninput="checkSetupNames()">
         </div>
-        <button id="startChartBtn" class="btn-welcome" disabled onclick="startCustomChart()">بدء المخطط <i class="fa-solid fa-rocket" style="margin-right: 5px;"></i></button>
+        <button id="startChartBtn" class="btn-welcome" disabled onclick="startCustomChart()">حفظ الأسماء <i class="fa-solid fa-rocket" style="margin-right: 5px;"></i></button>
     </div>
 </div>
 
 <!-- واجهة التطبيق الرئيسية -->
 <div class="app-container" id="mainApp" style="display: none;">
     <div class="header-section">
+        
+        <!-- لوحة الإشعارات المنسدلة -->
+        <div class="notif-panel" id="notifPanel">
+            <div class="notif-header">
+                <span>الإشعارات</span>
+                <i class="fa-solid fa-xmark" style="cursor:pointer; font-size:16px; color:var(--text-muted);" onclick="toggleNotifPanel()"></i>
+            </div>
+            <div class="notif-list" id="notifList">
+                <!-- الإشعارات تضاف هنا تلقائيا -->
+            </div>
+        </div>
+
         <div class="top-nav">
             <div class="top-nav-left">
-                <i class="fa-solid fa-arrow-left"></i>
-                <i class="fa-regular fa-star"></i>
-                <i class="fa-regular fa-bell"></i>
+                <i class="fa-solid fa-arrow-right"></i>
+                <i class="fa-solid fa-list-ul"></i>
+                <div class="bell-wrapper" onclick="toggleNotifPanel()">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="bell-badge" id="bellBadge"></span>
+                </div>
             </div>
             <div class="top-nav-center">
                 <span id="liveDot" class="live-indicator" style="display: none;"></span>
@@ -595,12 +681,20 @@
     let dbListener = null;
     let settingsListener = null;
 
+    // المتغيرات
     let dataLoaded = false;
     let settingsLoaded = false;
     let isWelcomeRead = false; 
     let isInitialLoad = true;
     let isChartLocked = true; 
     let liveTickInterval = null;
+    let previousLength = 0; 
+    let lastKnownManualCount = 0;
+    let hasShownLoginSummary = false;
+
+    // هويات المستخدمين للحساب الحالي
+    let myIdentity = '';
+    let partnerIdentity = '';
 
     function translateError(errorCode) {
         switch(errorCode) {
@@ -668,11 +762,11 @@
         document.getElementById('startWelcomeBtn').disabled = true;
         document.getElementById('startWelcomeBtn').classList.remove('active');
         
+        const scrollArea = document.querySelector('.welcome-content-scroll');
+        if (scrollArea) scrollArea.scrollTop = 0;
+        
         welcomeOverlay.style.display = 'flex';
-        // رفع النص الترحيبي لأعلى سطر ليظهر من البداية
         setTimeout(() => {
-            const scrollArea = document.querySelector('.welcome-content-scroll');
-            if(scrollArea) scrollArea.scrollTop = 0;
             welcomeOverlay.classList.add('active');
             welcomeOverlay.style.opacity = '1';
         }, 50);
@@ -686,8 +780,7 @@
         setTimeout(() => {
             welcomeOverlay.classList.remove('active');
             welcomeOverlay.style.display = 'none';
-            // نقوم بالتأكد من تهيئة الشارت عند إغلاق النافذة
-            checkAppReady(); 
+            evaluateApp(); 
         }, 500);
     }
 
@@ -700,11 +793,50 @@
         }, 50);
     }
 
-    // تقييم وعمل الشارت (حماية من التصفير والتجمد)
-    function checkAppReady() {
-        if (!auth.currentUser || !dataLoaded || !settingsLoaded) return;
+    // إظهار شاشة تحديد الهوية المستقلة لكل حساب
+    function showIdentityOverlay(n1, n2) {
+        const identityOverlay = document.getElementById('identityOverlay');
+        const container = document.getElementById('identityButtonsContainer');
+        container.innerHTML = '';
         
-        if (!isWelcomeRead) return; 
+        let btn1 = document.createElement('button');
+        btn1.className = 'identity-btn';
+        btn1.innerText = `أنا ${n1}`;
+        btn1.onclick = () => saveIdentity(n1, n2);
+        
+        let btn2 = document.createElement('button');
+        btn2.className = 'identity-btn';
+        btn2.innerText = `أنا ${n2}`;
+        btn2.onclick = () => saveIdentity(n2, n1);
+        
+        container.appendChild(btn1);
+        container.appendChild(btn2);
+
+        identityOverlay.style.display = 'flex';
+        setTimeout(() => {
+            identityOverlay.classList.add('active');
+            identityOverlay.style.opacity = '1';
+        }, 50);
+    }
+
+    // حفظ الهوية بربطها برمز الحساب الفريد UID
+    function saveIdentity(selectedName, otherName) {
+        myIdentity = selectedName;
+        partnerIdentity = otherName;
+        if (auth.currentUser) {
+            localStorage.setItem('myChartIdentity_' + auth.currentUser.uid, myIdentity);
+        }
+        
+        const identityOverlay = document.getElementById('identityOverlay');
+        identityOverlay.style.opacity = '0';
+        setTimeout(() => {
+            identityOverlay.style.display = 'none';
+            evaluateApp();
+        }, 500);
+    }
+
+    function evaluateApp() {
+        if (!auth.currentUser || !dataLoaded || !settingsLoaded) return;
         
         if (isChartLocked) {
             if(document.getElementById('setupOverlay').style.display !== 'flex') {
@@ -713,10 +845,34 @@
             return; 
         }
 
-        // إضاءة الزر الأخضر كدليل على أن التطبيق نشط
+        // إيقاف التنفيذ حتى يختار المستخدم هويته
+        if (!myIdentity) {
+            return; 
+        }
+
+        if (!isWelcomeRead) {
+            if(document.getElementById('welcomeOverlay').style.display !== 'flex' && document.getElementById('welcomeOverlay').style.opacity === '0') {
+                showWelcomeModal();
+            }
+            return; 
+        }
+
         document.getElementById('liveDot').style.display = 'inline-block';
         
-        // التحقق من الشموع (إذا كان الشارت فارغ حقاً)
+        // إظهار رسالة الملخص الفائتة للطرف الآخر فقط
+        if (!hasShownLoginSummary) {
+            let manualCandles = candles.filter(c => c && c.isManual);
+            let partnerCandles = manualCandles.filter(c => c.author && c.author !== myIdentity);
+            let seenCount = parseInt(localStorage.getItem('seenPartnerNotifs_' + auth.currentUser.uid)) || 0;
+            let missedCount = partnerCandles.length - seenCount;
+            
+            if (missedCount > 0) {
+                showSummaryToast(missedCount);
+            }
+            hasShownLoginSummary = true;
+            lastKnownManualCount = manualCandles.length; 
+        }
+        
         if (candles.length === 0) {
             initDefaultData();
         } else if (isInitialLoad) {
@@ -724,14 +880,11 @@
             isInitialLoad = false;
         }
 
-        // استمرار النبض
         if (!liveTickInterval) {
             liveTickInterval = setInterval(liveStableTick, 2000);
         }
 
-        // التأكد من أن قماش الشارت مرسوم (منع ظهور الشاشة السوداء)
         resizeCanvas();
-
         updateUI();
         drawChart();
     }
@@ -759,7 +912,7 @@
         document.getElementById('lockIconContainer').style.color = 'var(--up-color)';
         
         let btn = document.getElementById('startChartBtn');
-        btn.innerHTML = '<i class="fa-solid fa-spinner spinner"></i> جاري الفتح...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner spinner"></i> حفظ...';
         
         dbSettingsRef.set({
             setup_complete: true,
@@ -769,7 +922,6 @@
                 document.getElementById('setupOverlay').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('setupOverlay').style.display = 'none';
-                    // المتغيرات تتحدث من dbListener
                 }, 500);
             }, 800);
         });
@@ -778,7 +930,8 @@
     auth.onAuthStateChanged(user => {
         if (user) {
             let hasSuccessBtn = document.querySelector('.btn-success');
-            let delay = hasSuccessBtn ? 800 : 0; 
+            let isAutoLogin = !hasSuccessBtn; 
+            let delay = isAutoLogin ? 0 : 800; 
             
             setTimeout(() => {
                 authScreen.style.opacity = '0';
@@ -793,16 +946,19 @@
                     settingsLoaded = false;
                     isInitialLoad = true;
                     isChartLocked = true;
-                    isWelcomeRead = false;
-                    
-                    // منع إرجاع التمرير لنقطة البداية بشكل قسري، سيتم حسابه لاحقاً
                     scrollOffset = 0;
                     targetScrollOffset = null;
+                    previousLength = 0;
+                    lastKnownManualCount = 0;
+                    hasShownLoginSummary = false;
+                    myIdentity = '';
+                    partnerIdentity = '';
+                    
+                    if (isAutoLogin) {
+                        isWelcomeRead = true; 
+                    }
                     
                     loadData(); 
-                    
-                    // إجبار ظهور الرسالة
-                    showWelcomeModal();
 
                 }, 400); 
             }, delay);
@@ -812,6 +968,7 @@
             mainApp.style.display = 'none';
             document.getElementById('welcomeOverlay').style.display = 'none'; 
             document.getElementById('setupOverlay').style.display = 'none'; 
+            document.getElementById('identityOverlay').style.display = 'none'; 
             
             if(liveTickInterval) { clearInterval(liveTickInterval); liveTickInterval = null; }
             if(dbListener) { dbRef.off('value', dbListener); dbListener = null; }
@@ -825,6 +982,10 @@
             isChartLocked = true;
             scrollOffset = 0;
             targetScrollOffset = null;
+            previousLength = 0;
+            lastKnownManualCount = 0;
+            hasShownLoginSummary = false;
+            myIdentity = '';
             
             setButtonState('loginBtn', 'reset', 'تسجيل الدخول');
             setButtonState('signupBtn', 'reset', 'إنشاء حساب جديد');
@@ -904,7 +1065,7 @@
         candles = [];
         let startPrice = 0.00; 
         let time = Date.now(); 
-        candles.push({time: time, open: startPrice, close: startPrice, high: startPrice, low: startPrice, volume: 50, note: "بداية المخطط 🚀", isRead: true, isManual: true}); 
+        candles.push({time: time, open: startPrice, close: startPrice, high: startPrice, low: startPrice, volume: 50, note: "بداية المخطط 🚀", isRead: true, isManual: true, author: "System"}); 
         saveData();
     }
 
@@ -924,8 +1085,7 @@
             for (let i = 0; i < ticksToGenerate; i++) {
                 currentTimePointer += timeStep;
                 let open = startPrice;
-                // تذبذب السنتات الطبيعي والمريح للعين
-                let change = (Math.random() - 0.5) * 0.15; 
+                let change = (Math.random() - 0.5) * 0.12; 
                 let close = open + change;
                 
                 let high = Math.max(open, close) + (Math.random() * 0.05);
@@ -947,26 +1107,187 @@
             if(settings && settings.setup_complete) {
                 isChartLocked = false;
                 document.getElementById('pairNameDisplay').innerText = settings.pair_name;
+                
+                // جلب هوية الحساب المستقلة
+                let names = settings.pair_name.split('/');
+                let n1 = names[0]; let n2 = names[1];
+                let savedIdentity = localStorage.getItem('myChartIdentity_' + auth.currentUser.uid);
+                
+                if (!savedIdentity) {
+                    showIdentityOverlay(n1, n2);
+                } else {
+                    myIdentity = savedIdentity;
+                    partnerIdentity = (savedIdentity === n1) ? n2 : n1;
+                }
             } else {
                 isChartLocked = true;
                 document.getElementById('pairNameDisplay').innerText = '🔒 متوقف';
                 document.getElementById('liveDot').style.display = 'none';
                 if(liveTickInterval) { clearInterval(liveTickInterval); liveTickInterval = null; }
             }
-            checkAppReady();
+            evaluateApp();
         });
 
         if(dbListener) dbRef.off('value', dbListener);
         dbListener = dbRef.on('value', (snapshot) => {
             dataLoaded = true; 
             const data = snapshot.val();
-            if (data) {
-                candles = data;
+            
+            let parsedData = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+            let cleanCandles = parsedData.filter(c => c && typeof c === 'object' && c.time);
+
+            if (cleanCandles.length > 0) {
+                let newLength = cleanCandles.length;
+                if (!isInitialLoad && newLength > previousLength) {
+                    let diff = newLength - previousLength;
+                    if (scrollOffset > 0 && !isDragging && targetScrollOffset === null) {
+                        scrollOffset += diff;
+                    }
+                }
+                candles = cleanCandles;
+                previousLength = newLength;
             } else {
                 candles = [];
+                previousLength = 0;
             }
-            checkAppReady();
+            
+            try { updateNotificationPanel(); } catch(e) {}
+            evaluateApp();
         });
+    }
+
+    // ==========================================
+    // نظام الإشعارات والتنبيهات المخصص
+    // ==========================================
+    function updateNotificationPanel() {
+        if (!candles || !myIdentity || !auth.currentUser) return;
+        let manualCandles = candles.filter(c => c && c.isManual);
+        
+        let listContainer = document.getElementById('notifList');
+        if(listContainer) {
+            listContainer.innerHTML = '';
+            if(manualCandles.length === 0) {
+                listContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px;">لا توجد إشعارات أو تحديثات حتى الآن.</div>';
+            } else {
+                [...manualCandles].reverse().forEach(c => {
+                    let isUp = c.close >= c.open;
+                    let authorName = c.author || 'النظام';
+                    let title = isUp ? `قام/ت ${authorName} بتسجيل ارتفاع 🚀` : `قام/ت ${authorName} بتسجيل هبوط 💔`;
+                    let desc = c.note ? `ملاحظة: ${c.note}` : 'تحديث بدون ملاحظة إضافية.';
+                    let iconClass = isUp ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+                    let colorClass = isUp ? 'up' : 'down';
+                    
+                    let div = document.createElement('div');
+                    div.className = 'notif-item';
+                    div.onclick = () => jumpToCandle(c.time);
+                    div.innerHTML = `
+                        <div class="notif-icon ${colorClass}"><i class="fa-solid ${iconClass}"></i></div>
+                        <div class="notif-content">
+                            <div class="notif-title">${title}</div>
+                            <div class="notif-desc">${desc}</div>
+                            <div class="notif-time">${getSaudiDateTime(c.time)}</div>
+                        </div>
+                    `;
+                    listContainer.appendChild(div);
+                });
+            }
+        }
+        
+        // حساب العداد بناءً على الإشعارات التي أضافها الطرف الآخر ولم تُقرأ
+        let partnerCandles = manualCandles.filter(c => c.author && c.author !== myIdentity);
+        let seenCount = parseInt(localStorage.getItem('seenPartnerNotifs_' + auth.currentUser.uid)) || 0;
+        let unreadCount = partnerCandles.length - seenCount;
+        let badge = document.getElementById('bellBadge');
+        
+        if (unreadCount > 0) {
+            badge.style.display = 'flex';
+            badge.innerText = unreadCount;
+        } else {
+            badge.style.display = 'none';
+        }
+        
+        // إشعار منبثق فوري للإضافات الجديدة من الطرف الآخر
+        if (dataLoaded && !isInitialLoad && manualCandles.length > lastKnownManualCount) {
+            let newCount = manualCandles.length - lastKnownManualCount;
+            let newCandles = manualCandles.slice(-newCount);
+            
+            newCandles.forEach(c => {
+                if (c.author && c.author !== myIdentity) {
+                    showToastNotification(c);
+                }
+            });
+            lastKnownManualCount = manualCandles.length;
+        }
+    }
+    
+    function toggleNotifPanel() {
+        let panel = document.getElementById('notifPanel');
+        if(panel.classList.contains('active')) {
+            panel.classList.remove('active');
+            setTimeout(()=> { panel.style.display = 'none'; }, 400);
+        } else {
+            panel.style.display = 'flex';
+            
+            // تصفير الإشعارات الجديدة للطرف الآخر
+            if (myIdentity && candles && auth.currentUser) {
+                let partnerCandles = candles.filter(c => c && c.isManual && c.author && c.author !== myIdentity);
+                localStorage.setItem('seenPartnerNotifs_' + auth.currentUser.uid, partnerCandles.length);
+            }
+            document.getElementById('bellBadge').style.display = 'none';
+            
+            setTimeout(()=> { panel.classList.add('active'); }, 10);
+        }
+    }
+
+    function showToastNotification(candle) {
+        let isUp = candle.close >= candle.open;
+        let title = isUp ? `${candle.author} سجل ارتفاعاً 🚀` : `${candle.author} سجل هبوطاً 💔`;
+        let desc = candle.note ? 'تمت إضافة ملاحظة. اضغط للقراءة.' : 'تم تغيير مسار العلاقة.';
+        let color = isUp ? 'var(--up-color)' : 'var(--down-color)';
+        
+        let container = document.getElementById('toastContainer');
+        if(!container) return;
+        
+        let toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.style.borderRightColor = color;
+        toast.innerHTML = `
+            <div class="toast-icon" style="color: ${color};"><i class="fa-solid ${isUp ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}"></i></div>
+            <div style="display: flex; flex-direction: column; gap: 3px;">
+                <span style="font-size: 13px; font-weight: bold;">${title}</span>
+                <span style="font-size: 11px; color: var(--text-muted);">${desc}</span>
+            </div>
+        `;
+        toast.onclick = () => {
+            jumpToCandle(candle.time);
+            toast.style.display = 'none';
+        };
+        
+        container.appendChild(toast);
+        setTimeout(() => { if(toast.parentElement) toast.remove(); }, 5000);
+    }
+
+    function showSummaryToast(count) {
+        let container = document.getElementById('toastContainer');
+        if(!container) return;
+        
+        let toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.style.borderRightColor = 'var(--primary-glow)';
+        toast.innerHTML = `
+            <div class="toast-icon" style="color: var(--primary-glow);"><i class="fa-solid fa-bell"></i></div>
+            <div style="display: flex; flex-direction: column; gap: 3px;">
+                <span style="font-size: 13px; font-weight: bold;">أهلاً بك مجدداً يا ${myIdentity}! 🌟</span>
+                <span style="font-size: 11px; color: var(--text-muted);">فاتتك ${count} تحديثات من ${partnerIdentity}. اضغط هنا لرؤيتها.</span>
+            </div>
+        `;
+        toast.onclick = () => {
+            toggleNotifPanel();
+            toast.style.display = 'none';
+        };
+        
+        container.appendChild(toast);
+        setTimeout(() => { if(toast.parentElement) toast.remove(); }, 7000);
     }
 
     document.addEventListener("visibilitychange", () => {
@@ -977,8 +1298,6 @@
         if(!wrapper) return;
         let dpr = window.devicePixelRatio || 1;
         let rect = wrapper.getBoundingClientRect();
-        
-        // منع الفشل إذا كان العنصر غير ظاهر بعد
         if (rect.width === 0 || rect.height === 0) return;
         
         width = rect.width;
@@ -988,7 +1307,6 @@
         canvas.style.width = width + 'px';
         canvas.style.height = height + 'px';
         ctx.scale(dpr, dpr);
-        
         if(isWelcomeRead && !isChartLocked) drawChart();
     }
     window.addEventListener('resize', resizeCanvas);
@@ -1016,7 +1334,6 @@
         if(isPinching || isChartLocked || !isWelcomeRead) return;
         if (isDragging) {
             let deltaX = x - lastX;
-            // استخدام قسمة لتسهيل السحب والتحكم 1:1 كالتالي بمنصة بينانس
             let candleSpace = (width - 55) / zoomLevel; 
             scrollOffset += deltaX / candleSpace;
             lastX = x;
@@ -1101,19 +1418,25 @@
         if (targetIndex !== -1) { targetScrollOffset = Math.max(0, candles.length - 1 - targetIndex - Math.floor(zoomLevel/4)); }
     }
 
-    function drawChart() {
-        if(!isWelcomeRead || isChartLocked) return;
-
-        // حماية أخيرة للتأكد من وجود عرض وارتفاع للقماش
-        if (!width || !height) {
-            let rect = wrapper.getBoundingClientRect();
-            if (rect.width > 0 && rect.height > 0) {
-                resizeCanvas();
-            } else {
-                return;
+    function jumpToCandle(timestamp) {
+        if(isChartLocked || !isWelcomeRead) return;
+        let targetIndex = candles.findIndex(c => c.time === timestamp);
+        if (targetIndex !== -1) {
+            targetScrollOffset = Math.max(0, candles.length - 1 - targetIndex - Math.floor(zoomLevel/2) + 2);
+            
+            let panel = document.getElementById('notifPanel');
+            panel.classList.remove('active');
+            setTimeout(()=> { panel.style.display = 'none'; }, 300);
+            
+            let candle = candles[targetIndex];
+            if(candle.note) {
+                setTimeout(() => openReadModal(candle), 800);
             }
         }
+    }
 
+    function drawChart() {
+        if(!width || !height || !isWelcomeRead) return;
         ctx.clearRect(0, 0, width, height);
 
         let rightAxisWidth = 55; 
@@ -1121,7 +1444,7 @@
         let chartWidth = width - rightAxisWidth;
         let chartHeight = height - volHeight;
 
-        if(candles.length === 0) {
+        if(isChartLocked || candles.length === 0) {
             ctx.strokeStyle = '#1F242A'; ctx.lineWidth = 1; ctx.fillStyle = 'var(--text-muted)'; ctx.font = '10px Arial'; ctx.textAlign = 'left';
             for(let i = 1; i <= 5; i++) {
                 let y = (chartHeight / 6) * i;
@@ -1131,7 +1454,6 @@
             return;
         }
 
-        // السحب الناعم وحرية التمرير لليسار (المستقبل) قليلاً
         if (targetScrollOffset !== null) {
             let diff = targetScrollOffset - scrollOffset;
             if (Math.abs(diff) < 0.1) { scrollOffset = targetScrollOffset; targetScrollOffset = null; } else { scrollOffset += diff * 0.1; }
@@ -1139,7 +1461,6 @@
         
         let maxScroll = Math.max(0, candles.length - 2);
         if (scrollOffset > maxScroll) scrollOffset = maxScroll;
-        // السماح بالتمرير لليسار (الفراغ) كما في منصات التداول
         if (scrollOffset < -zoomLevel * 0.4) scrollOffset = -zoomLevel * 0.4;
 
         let startIndex = Math.max(0, candles.length - 1 - Math.ceil(scrollOffset + zoomLevel));
@@ -1151,7 +1472,6 @@
         let minPrice = Math.min(...visibleCandles.map(c => c.low));
         let maxVol = Math.max(...visibleCandles.map(c => c.volume));
         
-        // Auto-Scale بدون قيود تدميرية
         let priceRange = maxPrice - minPrice;
         if (priceRange === 0) {
             maxPrice += 1;
@@ -1183,7 +1503,6 @@
         let hoveredCandleX = null;
         let timeNow = Date.now();
 
-        // رسم خطوط MA (المتوسط المتحرك)
         let ma5Path = [];
         let ma10Path = [];
 
@@ -1207,7 +1526,6 @@
             let isUp = c.close >= c.open;
             let color = isUp ? '#0ECB81' : '#F6465D';
             
-            // السُمك موحد للجميع لضمان التناسق (مثل بايننس)
             let isManual = c.isManual;
             let cWidth = Math.max(candleSpace * 0.7, 1.5);
 
@@ -1216,7 +1534,6 @@
                 hoveredCandleX = x;
             }
 
-            // الفتيل
             ctx.beginPath(); 
             ctx.moveTo(x, getY(c.high)); 
             ctx.lineTo(x, getY(c.low));
@@ -1224,13 +1541,10 @@
             ctx.lineWidth = 1; 
             ctx.stroke();
             
-            // الجسم
             let yOpen = getY(c.open);
             let yClose = getY(c.close);
             let bodyY = Math.min(yOpen, yClose);
-            
-            // فرض ارتفاع لا يقل عن 2 بكسل للشمعة حتى تبدو طبيعية تماما ولا تتسطح بالزوم
-            let bodyH = Math.max(Math.abs(yOpen - yClose), 2); 
+            let bodyH = Math.max(Math.abs(yOpen - yClose), 2.5); 
             
             ctx.fillStyle = color; 
             ctx.fillRect(x - cWidth/2, bodyY, cWidth, bodyH);
@@ -1325,6 +1639,8 @@
     function updateUI() {
         if(candles.length === 0 || isChartLocked || !isWelcomeRead) return;
         let lastCandle = candles[candles.length - 1];
+        if(!lastCandle) return;
+
         let prevCandle = candles.length > 1 ? candles[candles.length - 2] : lastCandle;
         
         let priceElement = document.getElementById('currentPrice');
@@ -1372,7 +1688,6 @@
         let lastData = candles[candles.length - 1];
         let open = lastData.close;
         
-        // التذبذب اليومي وقت الخمول بالسنتات
         let change = (Math.random() - 0.5) * 0.12; 
         let close = open + change; 
         
@@ -1384,7 +1699,6 @@
         if(candles.length > 5000) candles.shift(); 
         saveData();
 
-        // التوقف عن سحب المستخدم للشموع الجديدة إذا كان يعود للماضي
         if (scrollOffset > 0 && !isDragging && targetScrollOffset === null) {
             scrollOffset += 1;
         } else if (!isDragging) {
@@ -1423,13 +1737,12 @@
         
         let lastData = candles[candles.length - 1];
         let open = lastData.close;
-        // قفزة التدخل بمقدار يتراوح بين 1.5 الى 3 دولار
-        let jump = Math.random() * 1.5 + 1.5; 
+        let jump = Math.random() * 4 + 4; 
         let close = pendingInteractionType === 'buy' ? open + jump : open - jump;
         let high = Math.max(open, close) + Math.random() * 0.5;
         let low = Math.min(open, close) - Math.random() * 0.5;
 
-        candles.push({time: Date.now(), open, close, high, low, volume: 2000, note: noteText || null, isRead: false, isManual: true});
+        candles.push({time: Date.now(), open, close, high, low, volume: 2000, note: noteText || null, isRead: false, isManual: true, author: myIdentity});
         saveData();
         
         targetScrollOffset = 0; 
